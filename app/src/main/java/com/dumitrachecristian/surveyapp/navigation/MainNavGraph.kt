@@ -19,13 +19,18 @@ fun NavGraphBuilder.mainNavGraph(
         route = MAIN_ROUTE,
     ) {
         composable(route = Screen.MainScreen.route) {
-            InitialScreen(navController = navController, viewModel = viewModel)
+            InitialScreen(navController = navController)
         }
 
         composable(
             route = Screen.SurveyScreen.route
         ) {
-
+            QuestionsScreen(
+                state = viewModel.viewState.value,
+                effectFlow = viewModel.effect,
+                onEventSent = { event ->  viewModel.setEvent(event) },
+                navController = navController
+            )
         }
     }
 }
