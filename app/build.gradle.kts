@@ -10,6 +10,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
+        buildConfigField("String", "BASE_URL", "\"https://xm-assignment.web.app\"")
         applicationId = "com.dumitrachecristian.surveyapp"
         minSdk = 26
         targetSdk = 34

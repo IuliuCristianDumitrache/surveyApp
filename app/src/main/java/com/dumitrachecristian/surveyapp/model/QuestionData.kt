@@ -7,8 +7,9 @@ data class QuestionData(
     val id: Int,
     @SerializedName("question")
     val question: String,
-    @Transient
-    var answer: String = "",
-    @Transient
-    var alreadyAnswered: Boolean = false,
-)
+    var answer: String? = null,
+) {
+    fun isAlreadyAnswered(): Boolean {
+        return this.answer.isNullOrEmpty().not()
+    }
+}

@@ -6,7 +6,7 @@ import com.dumitrachecristian.surveyapp.ViewState
 import com.dumitrachecristian.surveyapp.model.QuestionData
 import com.dumitrachecristian.surveyapp.model.QuestionRequest
 
-class SurveyContract {
+class QuestionsContract {
 
     sealed class Event : ViewEvent {
         object GetQuestions : Event()
@@ -19,14 +19,12 @@ class SurveyContract {
     ) : ViewState
 
     sealed class Effect : ViewSideEffect {
-        object DataWasLoaded : Effect()
-
         object PostAnswerSuccess: Effect()
 
         data class PostAnswerError(val questionRequest: QuestionRequest): Effect()
 
         sealed class Navigation : Effect() {
-            data class ToRepos(val userId: String): Navigation()
+            object Back: Navigation()
         }
     }
 

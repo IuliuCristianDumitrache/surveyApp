@@ -1,5 +1,6 @@
 package com.dumitrachecristian.surveyapp.network
 
+import com.dumitrachecristian.surveyapp.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -9,11 +10,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiServiceProvider {
 
-    private const val BASE_URL = "https://xm-assignment.web.app"
-
     fun getClient(): ApiService {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(getOkHttpClient())
             .build()

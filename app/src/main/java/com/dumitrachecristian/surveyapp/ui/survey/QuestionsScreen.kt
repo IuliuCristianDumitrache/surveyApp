@@ -2,6 +2,7 @@ package com.dumitrachecristian.surveyapp.ui.survey
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,8 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Button
-import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -21,13 +22,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.dumitrachecristian.surveyapp.R
 import com.dumitrachecristian.surveyapp.SIDE_EFFECTS_KEY
 import com.dumitrachecristian.surveyapp.model.QuestionData
@@ -35,6 +35,8 @@ import com.dumitrachecristian.surveyapp.model.QuestionRequest
 import com.dumitrachecristian.surveyapp.ui.components.ErrorBanner
 import com.dumitrachecristian.surveyapp.ui.components.Progress
 import com.dumitrachecristian.surveyapp.ui.components.SuccessBanner
+import com.dumitrachecristian.surveyapp.ui.components.SurveyButton
+import com.dumitrachecristian.surveyapp.ui.components.SurveyIconButton
 import com.dumitrachecristian.surveyapp.ui.theme.Typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -44,11 +46,14 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun QuestionsScreen(
-    state: SurveyContract.State,
-    effectFlow: Flow<SurveyContract.Effect>?,
-    onEventSent: (event: SurveyContract.Event) -> Unit,
-    navController: NavHostController
+    state: QuestionsContract.State,
+    effectFlow: Flow<QuestionsContract.Effect>?,
+    onEventSent: (event: QuestionsContract.Event) -> Unit,
+    onNavigationRequested: (navigationEffect: QuestionsContract.Effect.Navigation) -> Unit
 ) {
+    LaunchedEffect(Unit) {
+        onEventSent.invoke(QuestionsContract.Event.GetQuestions)
+    }
     var showErrorBanner by remember { mutableStateOf(false) }
     var failedRequest: QuestionRequest? = null
 
@@ -57,20 +62,16 @@ fun QuestionsScreen(
     LaunchedEffect(SIDE_EFFECTS_KEY) {
         effectFlow?.onEach { effect ->
             when (effect) {
-                is SurveyContract.Effect.DataWasLoaded -> {
-
+                is QuestionsContract.Effect.Navigation.Back -> {
+                    onNavigationRequested(QuestionsContract.Effect.Navigation.Back)
                 }
 
-                is SurveyContract.Effect.Navigation.ToRepos -> {
-
-                }
-
-                is SurveyContract.Effect.PostAnswerError -> {
+                is QuestionsContract.Effect.PostAnswerError -> {
                     showErrorBanner = true
                     failedRequest = effect.questionRequest
                 }
 
-                is SurveyContract.Effect.PostAnswerSuccess -> {
+                is QuestionsContract.Effect.PostAnswerSuccess -> {
                     showSuccessBanner = true
                 }
             }
@@ -84,7 +85,7 @@ fun QuestionsScreen(
 
         ErrorBanner(showErrorBanner, onButtonClick = {
             failedRequest?.let {
-                onEventSent(SurveyContract.Event.PostAnswer(it))
+                onEventSent(QuestionsContract.Event.PostAnswer(it))
             }
         }, onClose = {
             showErrorBanner = false
@@ -94,9 +95,9 @@ fun QuestionsScreen(
         QuestionsViewPager(
             state = state,
             postAnswer = { questionRequest ->
-                onEventSent(SurveyContract.Event.PostAnswer(questionRequest))
+                onEventSent(QuestionsContract.Event.PostAnswer(questionRequest))
             },
-            navController
+            onNavigationRequested
         )
     }
     if (state.isLoading) {
@@ -108,9 +109,9 @@ fun QuestionsScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun QuestionsViewPager(
-    state: SurveyContract.State,
+    state: QuestionsContract.State,
     postAnswer: (QuestionRequest) -> Unit,
-    navController: NavHostController
+    onNavigationRequested: (navigationEffect: QuestionsContract.Effect.Navigation) -> Unit
 ) {
 
     val pagerState = rememberPagerState(
@@ -119,21 +120,32 @@ fun QuestionsViewPager(
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
 
-            IconButton(onClick = {
-                navController.popBackStack()
-            }) {
-
+            SurveyIconButton(
+                tint = Color.Black,
+                contentDescription = stringResource(R.string.back),
+                imageVector = Icons.Default.ArrowBack,
+                modifier = Modifier
+                    .padding(8.dp)
+            ) {
+                onNavigationRequested(QuestionsContract.Effect.Navigation.Back)
             }
+
 
             Text(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(20.dp),
                 textAlign = TextAlign.Center,
-                text = stringResource(R.string.questions_number, pagerState.currentPage + 1, state.questions.size)
+                text = stringResource(
+                    R.string.questions_number,
+                    pagerState.currentPage + 1,
+                    state.questions.size
+                )
             )
         }
 
@@ -142,7 +154,10 @@ fun QuestionsViewPager(
                 .fillMaxWidth()
                 .padding(20.dp),
             textAlign = TextAlign.Center,
-            text = stringResource(R.string.questions_submitted, state.questions.filter { it.alreadyAnswered }.size)
+            text = stringResource(
+                R.string.questions_submitted,
+                state.questions.filter { it.isAlreadyAnswered() }.size
+            )
         )
 
         HorizontalPager(
@@ -152,15 +167,29 @@ fun QuestionsViewPager(
                 .padding(10.dp),
             state = pagerState
         ) { position ->
-            QuestionPage(state.questions[position], position, state.questions.size, pagerState, scope, postAnswer)
+            QuestionPage(
+                state.questions[position],
+                position,
+                state.questions.size,
+                pagerState,
+                scope,
+                postAnswer
+            )
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun QuestionPage(questionData: QuestionData, position: Int, size: Int, state: PagerState, scope: CoroutineScope, postAnswer: (QuestionRequest) -> Unit) {
-    var answerText by rememberSaveable { mutableStateOf(questionData.answer ?: "") }
+fun QuestionPage(
+    questionData: QuestionData,
+    position: Int,
+    size: Int,
+    state: PagerState,
+    scope: CoroutineScope,
+    postAnswer: (QuestionRequest) -> Unit
+) {
+    var answerText by remember { mutableStateOf("") }
 
     Column {
         Text(
@@ -174,11 +203,11 @@ fun QuestionPage(questionData: QuestionData, position: Int, size: Int, state: Pa
                 .fillMaxWidth()
                 .height(100.dp),
             maxLines = 6,
-            value = answerText ?: "",
+            value = answerText.ifEmpty { questionData.answer ?: "" },
             onValueChange = {
                 answerText = it
             },
-            enabled = questionData.alreadyAnswered.not()
+            enabled = questionData.isAlreadyAnswered().not()
         )
 
         Row(
@@ -187,43 +216,33 @@ fun QuestionPage(questionData: QuestionData, position: Int, size: Int, state: Pa
                 .padding(top = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(
-                modifier = Modifier,
-                onClick = {
-                    scope.launch {
-                        state.scrollToPage(state.currentPage - 1)
-                    }
-                },
+            SurveyButton(
+                text = stringResource(R.string.previous),
                 enabled = position != 0
             ) {
-                Text(stringResource(R.string.previous))
+                scope.launch {
+                    state.scrollToPage(state.currentPage - 1)
+                }
             }
 
-            Button(
-                modifier = Modifier,
-                onClick = {
-                    postAnswer.invoke(QuestionRequest(questionData.id, answerText))
-                },
-                enabled = questionData.alreadyAnswered.not() && answerText.isNotEmpty()
-            ) {
-                val text = if (questionData.alreadyAnswered) {
+            SurveyButton(
+                text = if (questionData.isAlreadyAnswered()) {
                     stringResource(R.string.already_submitted)
                 } else {
                     stringResource(R.string.submit)
-                }
-                Text(text)
+                },
+                enabled = questionData.isAlreadyAnswered().not() && answerText.isNotEmpty()
+            ) {
+                postAnswer.invoke(QuestionRequest(questionData.id, answerText))
             }
 
-            Button(
-                modifier = Modifier,
-                onClick = {
-                    scope.launch {
-                        state.scrollToPage(state.currentPage + 1)
-                    }
-                },
+            SurveyButton(
+                text = stringResource(R.string.next),
                 enabled = position != size - 1
             ) {
-                Text(stringResource(R.string.next))
+                scope.launch {
+                    state.scrollToPage(state.currentPage + 1)
+                }
             }
         }
     }

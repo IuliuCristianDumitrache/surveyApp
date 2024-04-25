@@ -7,7 +7,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.dumitrachecristian.surveyapp.MainViewModel
 import com.dumitrachecristian.surveyapp.ui.initialscreen.InitialScreen
+import com.dumitrachecristian.surveyapp.ui.initialscreen.InitialScreenContract
 import com.dumitrachecristian.surveyapp.ui.survey.QuestionsScreen
+import com.dumitrachecristian.surveyapp.ui.survey.QuestionsContract
 
 
 fun NavGraphBuilder.mainNavGraph(
@@ -19,17 +21,27 @@ fun NavGraphBuilder.mainNavGraph(
         route = MAIN_ROUTE,
     ) {
         composable(route = Screen.MainScreen.route) {
-            InitialScreen(navController = navController)
+            InitialScreen(
+                onNavigationRequested = { navigationEffect ->
+                    if (navigationEffect is InitialScreenContract.Effect.Navigation.ToQuestionsScreen) {
+                        navController.navigate(Screen.QuestionsScreen.route)
+                    }
+                }
+            )
         }
 
         composable(
-            route = Screen.SurveyScreen.route
+            route = Screen.QuestionsScreen.route
         ) {
             QuestionsScreen(
                 state = viewModel.viewState.value,
                 effectFlow = viewModel.effect,
                 onEventSent = { event ->  viewModel.setEvent(event) },
-                navController = navController
+                onNavigationRequested = { navigationEffect ->
+                    if (navigationEffect is QuestionsContract.Effect.Navigation.Back) {
+                        navController.popBackStack()
+                    }
+                }
             )
         }
     }

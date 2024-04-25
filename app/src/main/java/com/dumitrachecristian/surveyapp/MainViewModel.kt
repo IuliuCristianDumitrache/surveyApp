@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.dumitrachecristian.surveyapp.model.QuestionRequest
 import com.dumitrachecristian.surveyapp.network.Result
 import com.dumitrachecristian.surveyapp.repository.SurveyRepository
-import com.dumitrachecristian.surveyapp.ui.survey.SurveyContract
+import com.dumitrachecristian.surveyapp.ui.survey.QuestionsContract
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -13,21 +13,17 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: SurveyRepository,
-): BaseViewModel<SurveyContract.Event, SurveyContract.State, SurveyContract.Effect>() {
+): BaseViewModel<QuestionsContract.Event, QuestionsContract.State, QuestionsContract.Effect>() {
 
-    init {
-        getQuestions()
-    }
-
-    override fun setInitialState() = SurveyContract.State(
+    override fun setInitialState() = QuestionsContract.State(
         questions = emptyList(),
         isLoading = true,
     )
 
-    override fun handleEvents(event: SurveyContract.Event) {
+    override fun handleEvents(event: QuestionsContract.Event) {
         when (event) {
-            is SurveyContract.Event.GetQuestions -> getQuestions()
-            is SurveyContract.Event.PostAnswer -> {
+            is QuestionsContract.Event.GetQuestions -> getQuestions()
+            is QuestionsContract.Event.PostAnswer -> {
                 postAnswer(event.questionRequest)
             }
         }
@@ -69,7 +65,6 @@ class MainViewModel @Inject constructor(
                 is Result.Success -> {
                         val questions = viewState.value.questions
                         questions.find { it.id == questionRequest.id }?.apply {
-                            alreadyAnswered = true
                             this.answer = questionRequest.answer
                         }
                         setState {
@@ -78,7 +73,7 @@ class MainViewModel @Inject constructor(
                                 isLoading = false,
                             )
                         }
-                        setEffect { SurveyContract.Effect.PostAnswerSuccess }
+                        setEffect { QuestionsContract.Effect.PostAnswerSuccess }
                 }
 
                 is Result.Error -> {
@@ -87,7 +82,7 @@ class MainViewModel @Inject constructor(
                             isLoading = false,
                         )
                     }
-                    setEffect { SurveyContract.Effect.PostAnswerError(questionRequest) }
+                    setEffect { QuestionsContract.Effect.PostAnswerError(questionRequest) }
                 }
 
                 is Result.Loading -> {

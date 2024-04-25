@@ -1,6 +1,5 @@
 package com.dumitrachecristian.surveyapp.ui.components
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.expandVertically
@@ -43,11 +42,10 @@ fun ErrorBanner(isVisible: Boolean, onClose: () -> Unit, onButtonClick: () -> Un
 
 @ExperimentalAnimationApi
 @Composable
-fun Banner(isVisible: Boolean, background: Color, textColor: Color, text: String, buttonText: String? = null, buttonClick: (() -> Unit)? = null, onClose: () -> Unit) {
+private fun Banner(isVisible: Boolean, background: Color, textColor: Color, text: String, buttonText: String? = null, buttonClick: (() -> Unit)? = null, onClose: () -> Unit) {
     if (isVisible) {
         LaunchedEffect(Unit) {
             delay(3000)
-            Log.d("reeee", "here")
             onClose.invoke()
         }
         AnimatedVisibility(
