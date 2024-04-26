@@ -26,7 +26,7 @@ This documentation provides an overview of the functionality and implementation 
 ## Architecture
 The application connects to an API and utilizes /questions endpoint to fetch question data and utilizes the /question/submit to post a response
 
-Follows the Model-View-ViewModel (MVI) architecture pattern for better separation of concerns and maintainability. Components include:
+Follows the Model-View-Intent (MVI) architecture pattern for better separation of concerns and maintainability. Components include:
 MVI stands for Model-View-Intent :
 
 - **Model:** instead of having a separate state for the View, ViewModel, and the Data layer, the Model will be the single source of truth of the overall state, and it’s immutable to ensure that it will be updated from only one place.
