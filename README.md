@@ -6,21 +6,21 @@ This documentation provides an overview of the functionality and implementation 
 <img src="https://github.com/IuliuCristianDumitrache/surveyApp/blob/main/surveyApp.gif" width="400" height="790">
 
 ## Requirements
-Initial Screen
+- Initial Screen
   Display a button labeled "Start survey".
   Upon pressing the button, navigate to the Questions Screen.
   
-Questions Screen
-  Display survey questions in a horizontal pager.
-  Provide previous and next buttons to navigate between questions.
-  Disable previous button when on the first question and next button when on the last question.
-  Display a counter of already submitted questions on top of each question.
-  Submit button should be disabled when no answer text exists or when the answer has already been submitted.
-  Upon pressing the submit button, post the response to the server.
-  Handle success and failure responses from the server:
-    Success (200 status): Display a notification banner with the text "Success!" for a few seconds.
-    Failure (400 status): Display a notification banner with the text "Failure..." and a retry button.
-Keep track of successfully submitted questions in memory to maintain the submitted answer and disable the submit button when revisiting a submitted question.
+- Questions Screen
+  - Display survey questions in a horizontal pager.
+  - Provide previous and next buttons to navigate between questions.
+  - Disable previous button when on the first question and next button when on the last question.
+  - Display a counter of already submitted questions on top of each question.
+  - Submit button should be disabled when no answer text exists or when the answer has already been submitted.
+  - Upon pressing the submit button, post the response to the server.
+  - Handle success and failure responses from the server:
+    - Success (200 status): Display a notification banner with the text "Success!" for a few seconds.
+    - Failure (400 status): Display a notification banner with the text "Failure..." and a retry button.
+  - Keep track of successfully submitted questions in memory to maintain the submitted answer and disable the submit button when revisiting a submitted question.
 
 
 ## Architecture
@@ -29,23 +29,9 @@ The application connects to an API and utilizes /questions endpoint to fetch que
 Follows the Model-View-ViewModel (MVI) architecture pattern for better separation of concerns and maintainability. Components include:
 MVI stands for Model-View-Intent :
 
-**Model:** instead of having a separate state for the View, ViewModel, and the Data layer, the Model will be the single source of truth of the overall state, and it’s immutable to ensure that it will be updated from only one place.
-**View:**  represent the UI layer, the activity, or the fragment, it defines the user actions and renders the state emitted by the model.
-**Intent:**  do not confuse it with the Android Intent, it’s the intention to perform an action either by the user or the app itself.
-
-## Continuous Integration/Continuous Deployment (CI/CD)
-Implemented CI/CD pipelines using GitHub Actions to automate build, test, and deployment processes.
-
-## Unit Testing
-Implement CI/CD pipelines using GitHub Actions to automate build, test, and deployment processes.
-
-There are two actions on GitHub, one to Build Debug APK and one to run Unit Tests.  
-You can manually run the Build Debug APK action to generate an artifact.
-
-UnitTest action contains the static code analysis ( Lint ) and test coverage artifacts. This action will run on every push from the main branch or can be manually trigerred.
-
-## Code Coverage Integration
-Utilized code coverage tools like JaCoCo to measure code coverage and ensure thorough testing.
+- **Model:** instead of having a separate state for the View, ViewModel, and the Data layer, the Model will be the single source of truth of the overall state, and it’s immutable to ensure that it will be updated from only one place.
+- **View:**  represent the UI layer, the activity, or the fragment, it defines the user actions and renders the state emitted by the model.
+- **Intent:**  do not confuse it with the Android Intent, it’s the intention to perform an action either by the user or the app itself.
 
 ## Third-party Libraries
 1. **Retrofit2:**
